@@ -6,6 +6,8 @@ import urllib.parse
 import json
 import garmets_data
 import tokens
+import re
+import asyncio
 
 
 if not os.path.exists("./cache"):
@@ -16,8 +18,22 @@ BOT_API_KEY = tokens.get_token("bot_token")
 WEATHER_API_KEY = tokens.get_token("weather_token")
 WEATHER_DEFAULT_LOCATION = (43.548899, -79.6650758)
 
+NON_NUMERICAL_REGEX = re.compile(r'[^\d.-]+')
+
 outfits = garmets_data.Outfit()
 client = discord.Client()
+
+
+def is_float(x: str):
+    try:
+        float(x)
+        return True
+    except ValueError:
+        return False
+
+
+def kelvin_to_celcius(kelvin: float) -> float:
+    return kelvin - 273.15
 
 
 def get_JSON(url):
@@ -26,7 +42,7 @@ def get_JSON(url):
     return json.loads(response_data)
 
 
-def get_weather(location=WEATHER_DEFAULT_LOCATION):
+def get_weather(location):
     return get_JSON(
         f"https://api.openweathermap.org/data/2.5/weather?lat={location[0]}&lon={location[1]}&appid={WEATHER_API_KEY}"
     )
@@ -37,12 +53,13 @@ def get_image_url_query(query):
         # image from wikipedia
         response_data = get_JSON(
             "https://en.wikipedia.org/w/api.php?action=query&format=json&prop=images&titles=" +
-            query
+            urllib.parse.quote(query)
         )
 
         pages = response_data['query']['pages']
         # filter svgs: probably not what we're looking for
-        images = [x for x in list(pages.items())[0][1]['images'] if not x.endswith(".svg")]
+        images = [x for x in list(pages.items())[0][1]['images']
+                  if not x['title'].endswith(".svg")]
         rand_image = random.choice(images)
 
         image_data = get_JSON(
@@ -51,8 +68,9 @@ def get_image_url_query(query):
         url = list(image_pages.items())[0][1]['imageinfo'][0]['thumburl']
 
         return url
-    except:
+    except BaseException as err:
         # fallback: unsplash
+        print("Failed to get wikipedia image:", err)
         return "https://source.unsplash.com/random/280x280/?" + urllib.parse.quote(query)
 
 
@@ -89,8 +107,46 @@ def get_set_for_temperature(temp: float) -> int:
 def get_outfit_based_on_weather(weather_data):
     data = weather_data['main']
     rain = 'rain' in data
-    set = get_set_for_temperature(data['temp'])
+    set = get_set_for_temperature(kelvin_to_celcius(data['temp']))
     return outfits.pick_outfit(set, rain)
+
+
+async def what_should_i_wear_command(message):
+    args = [float(x) for x in re.split(
+        NON_NUMERICAL_REGEX, message.content) if is_float(x)]
+    location = WEATHER_DEFAULT_LOCATION
+    if len(args) >= 2:
+        location = args[0], args[1]
+
+    weather_data = get_weather(location)
+    outfit = get_outfit_based_on_weather(weather_data)
+    weather_deg_c = round(
+        (kelvin_to_celcius(weather_data['main']['temp'])) * 10) / 10
+    temp_description = outfits.set_type_names[get_set_for_temperature(
+        weather_deg_c)]
+
+    await message.channel.send(
+        f"It's {weather_deg_c}°C in {weather_data['name'] or location}, which is {temp_description}! It's " +
+        ("" if 'rain' in weather_data else "not ") +
+        "raining, so you should wear:"
+    )
+
+    for i in range(len(outfits.garmet_type_info)):
+        item = outfit[i]
+        item_info = outfits.garmet_type_info[i]
+        image_query = item
+        response = f"{item} on your {item_info['goes_on']}"
+
+        if item is None:
+            response = f"nothing on your {item_info['goes_on']}"
+            image_query = item_info['goes_on']
+
+        await asyncio.sleep(2)
+        await send_message_with_image(
+            text=response,
+            image_url=get_image_url_query(image_query),
+            channel=message.channel
+        )
 
 
 @client.event
@@ -106,34 +162,7 @@ async def on_message(message):
     text_clean = message.content.lower()
 
     if text_clean.startswith('what should i wear'):
-        weather_data = get_weather()
-        outfit = get_outfit_based_on_weather(weather_data)
-        weather_deg_c = round(
-            (weather_data['main']['temp'] - 273.15) * 10) / 10
-        temp_description = outfits.set_type_names[get_set_for_temperature(
-            weather_deg_c)]
-
-        await message.channel.send(
-            f"It's {weather_deg_c}°C outside, which is {temp_description}! It's " +
-            ("" if 'rain' in weather_data else "not ") +
-            "raining, so you should wear:"
-        )
-
-        for i in range(len(outfits.garmet_type_info)):
-            item = outfit[i]
-            item_info = outfits.garmet_type_info[i]
-            image_query = item
-            response = f"{item} on your {item_info['goes_on']}"
-
-            if item is None:
-                response = f"nothing on your {item_info['goes_on']}"
-                image_query = item_info['goes_on']
-
-            await send_message_with_image(
-                text=response,
-                image_url=get_image_url_query(image_query),
-                channel=message.channel
-            )
+        await what_should_i_wear_command(message)
 
 
 client.run(BOT_API_KEY)
