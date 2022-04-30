@@ -1,6 +1,5 @@
-from curses import has_extended_color_support
-from email.charset import SHORTEST
 import random
+from typing import List
 
 
 class Outfit:
@@ -21,7 +20,7 @@ class Outfit:
         [["winter gloves"], ["gloves", "mittens"], ["gloves", "mittens", "none"], ["bike gloves", "none"], ["none"]]
     ]
 
-    def pick_outfit(self, set: int, rain: bool):
+    def pick_outfit(self, set: int, rain: bool) -> List[str]:
         """ Returns a list of outfits you can wear given if it's raining or not"""
         retval = []
         for i in range(5):

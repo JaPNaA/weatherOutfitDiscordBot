@@ -2,6 +2,7 @@ import os
 import discord
 import urllib.request
 import json
+import garmets_data
 
 if not os.path.exists("./cache"):
     os.mkdir("cache")
@@ -70,9 +71,10 @@ async def on_message(message):
         # await message.channel.send('Hello!')
         await message.channel.send(get_weather())
     elif message.content.startswith('$unsplash'):
+        outfit = garmets_data.Outfit().pick_outfit(1, False)
         await send_message_with_unsplash_image(
-            text='test', 
-            query='hat',
+            text=outfit[0], 
+            query=outfit[0],
             channel=message.channel
         )
 
