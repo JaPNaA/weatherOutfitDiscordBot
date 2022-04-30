@@ -26,7 +26,7 @@ class Outfit:
         retval = []
         for i in range(5):
             if not rain:
-                retval.append(random.choice(outfits[i][set]))
+                retval.append(random.choice(self.outfits[i][set]))
             else:
-                retval.append(random.choice(winteroutfits[i][set]))
+                retval.append(random.choice(self.rainoutfits[i][set]))
         return retval
