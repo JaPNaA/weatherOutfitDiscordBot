@@ -19,6 +19,7 @@ WEATHER_API_KEY = tokens.get_token("weather_token")
 WEATHER_DEFAULT_LOCATION = (43.548899, -79.6650758)
 
 NON_NUMERICAL_REGEX = re.compile(r'[^\d.-]+')
+BRACKETS_REGEX = re.compile(r'\s*\(.+\)\s*')
 
 outfits = garmets_data.Outfit()
 client = discord.Client()
@@ -34,6 +35,10 @@ def is_float(x: str):
 
 def kelvin_to_celcius(kelvin: float) -> float:
     return kelvin - 273.15
+
+
+def remove_brackets(string: str) -> str:
+    return re.sub(BRACKETS_REGEX, "", string)
 
 
 def get_JSON(url):
@@ -107,9 +112,9 @@ def get_set_for_temperature(temp: float) -> int:
 
 def get_outfit_based_on_weather(weather_data):
     data = weather_data['main']
-    rain = 'rain' in data
+    rain_or_snow = ('rain' in data) or ('snow' in data)
     set = get_set_for_temperature(kelvin_to_celcius(data['temp']))
-    return outfits.pick_outfit(set, rain)
+    return outfits.pick_outfit(set, rain_or_snow)
 
 
 async def what_should_i_wear_command(message):
@@ -145,7 +150,7 @@ async def what_should_i_wear_command(message):
         await asyncio.sleep(2)
         await send_message_with_image(
             text=response,
-            image_url=get_image_url_query(image_query),
+            image_url=get_image_url_query(remove_brackets(image_query)),
             channel=message.channel
         )
 

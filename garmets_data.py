@@ -6,9 +6,9 @@ class Outfit:
     # hats = beanie, knitted had
     outfits = [
         [
-            ["beanie", "trapper", "winter headband"],
-            ["beanie", "hood"],
-            ["beanie", "hood", None],
+            ["knit cap (beanie)", "ushanka (trapper)", "winter headband"],
+            ["knit cap (beanie)", "hood"],
+            ["knit cap (beanie)", "hood", None],
             ["cap", None],
             ["cap", None]
         ],
@@ -16,7 +16,7 @@ class Outfit:
             ["layers of jacket"],
             ["jacket"],
             ["jacket"],
-            ["long sleeve shirt", "turtle neck"],
+            ["long sleeve shirt", "polo neck (turtle neck)"],
             ["t-shirt", "tanktop"]
         ],
         [
@@ -44,9 +44,9 @@ class Outfit:
 
     rainoutfits = [
         [
-            ["beanie", "trapper", "winter headband"],
-            ["beanie", "hood"],
-            ["beanie", "hood"],
+            ["knit cap (beanie)", "ushanka (trapper)", "winter headband"],
+            ["knit cap (beanie)", "hood"],
+            ["knit cap (beanie)", "hood"],
             ["cap"],
             ["cap"]
         ],
