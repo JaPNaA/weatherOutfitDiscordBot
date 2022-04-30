@@ -1,5 +1,6 @@
 import discord
 import urllib.request
+import json
 
 try:
     with open(".bot_token") as file:
@@ -15,7 +16,7 @@ def get_weather():
     response = urllib.request.urlopen(
         "https://api.openweathermap.org/data/2.5/weather?lat=43.548899&lon=-79.6650758&appid=54fcadf5eb972b7b498158fa814a0841")
     response_data = response.read()
-    return response_data
+    return json.loads(response_data)
 
 
 @client.event
