@@ -3,4 +3,4 @@ include/
 lib/
 lib64
 share/
-.env
+cache/
