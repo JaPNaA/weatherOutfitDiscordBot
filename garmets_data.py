@@ -23,8 +23,8 @@ class Outfit:
             ["snow pants"],
             ["jeans"],
             ["jeans", "baggy pants"],
-            ["jeans", "baggy pants", "shorts", "joggers"],
-            ["jeans", "baggy pants", "shorts", "joggers"]
+            ["jeans", "baggy pants", "shorts", "sweatpants"],
+            ["jeans", "baggy pants", "shorts", "sweatpants"]
         ],
         [
             ["snow boots"],
@@ -61,8 +61,8 @@ class Outfit:
             ["snow pants"],
             ["jeans"],
             ["jeans", "baggy pants"],
-            ["jeans", "baggy pants", "shorts", "joggers"],
-            ["jeans", "baggy pants", "shorts", "joggers"]
+            ["jeans", "baggy pants", "shorts", "sweatpants"],
+            ["jeans", "baggy pants", "shorts", "sweatpants"]
         ],
         [
             ["snow boots"],
