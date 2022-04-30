@@ -4,6 +4,8 @@ import urllib.request
 import json
 import garmets_data
 
+outfits = garmets_data.Outfit()
+
 if not os.path.exists("./cache"):
     os.mkdir("cache")
 
@@ -57,6 +59,20 @@ async def send_message_with_unsplash_image(text, query, channel):
         discord_file = discord.File(file)
         await channel.send(text, file=discord_file)
 
+def get_outfit_based_on_weather():
+    data = get_weather()['main']
+    rain = 'rain' in data
+    set = 0
+    if -12 < data['temp'] <= 0:
+        set = 1
+    if 0 < data['temp'] <= 12:
+        set = 2
+    if 12 < data['temp'] <= 24:
+        set = 3
+    if data['temp'] > 24:
+        set = 4
+    return outfits.pick_outfit(set, rain)
+
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
@@ -71,7 +87,7 @@ async def on_message(message):
         # await message.channel.send('Hello!')
         await message.channel.send(get_weather())
     elif message.content.startswith('$unsplash'):
-        outfit = garmets_data.Outfit().pick_outfit(1, False)
+        outfit = get_outfit_based_on_weather()
         await send_message_with_unsplash_image(
             text=outfit[0], 
             query=outfit[0],
