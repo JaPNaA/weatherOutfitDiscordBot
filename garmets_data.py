@@ -68,8 +68,8 @@ class Outfit:
             ["snow boots"],
             ["winter boots"],
             ["winter boots", "sneakers", "white shoes"],
-            ["running shoes"],
-            ["flip flops", "running shoes"]
+            ["rainboots"],
+            ["flip flops"]
         ],
         [
             ["winter gloves"],
