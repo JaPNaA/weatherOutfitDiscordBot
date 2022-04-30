@@ -1,5 +1,6 @@
 import os
 import random
+from typing import Dict
 import discord
 import urllib.request
 import urllib.parse
@@ -8,6 +9,7 @@ import garmets_data
 import tokens
 import re
 import asyncio
+from outfit_saves import OutfitItem, OutfitSet, SavedOutfits
 
 
 if not os.path.exists("./cache"):
@@ -19,10 +21,14 @@ WEATHER_API_KEY = tokens.get_token("weather_token")
 WEATHER_DEFAULT_LOCATION = (43.548899, -79.6650758)
 
 NON_NUMERICAL_REGEX = re.compile(r'[^\d.-]+')
+NUMBER_REGEX = re.compile(r'\d+')
 BRACKETS_REGEX = re.compile(r'\s*\(.+\)\s*')
 
 outfits = garmets_data.Outfit()
+saved_outfits = SavedOutfits()
 client = discord.Client()
+
+last_sent_outfit_sets_map: Dict[int, OutfitSet] = {}
 
 
 def is_float(x: str):
@@ -137,22 +143,57 @@ async def what_should_i_wear_command(message):
         "raining, so you should wear:"
     )
 
+    outfit_set = OutfitSet()
+
     for i in range(len(outfits.garmet_type_info)):
         item = outfit[i]
-        item_info = outfits.garmet_type_info[i]
-        image_query = item
-        response = f"{item} on your {item_info['goes_on']}"
+        image_url = get_image_url_query(
+            remove_brackets(item) if item else
+            outfits.garmet_type_info[i]['goes_on']
+        )
+        outfit_set.add_item(OutfitItem(i, item, image_url))
 
-        if item is None:
+    await _send_outfit_set(outfit_set, message.channel)
+    last_sent_outfit_sets_map[message.channel.id] = outfit_set
+
+
+async def _send_outfit_set(outfit_set: OutfitSet, channel):
+    for item in outfit_set.items:
+        item_info = outfits.garmet_type_info[item.garmet_type]
+        response = f"{item.garmet_name} on your {item_info['goes_on']}"
+
+        if not item.garmet_name:
             response = f"nothing on your {item_info['goes_on']}"
-            image_query = item_info['goes_on']
 
         await asyncio.sleep(2)
         await send_message_with_image(
             text=response,
-            image_url=get_image_url_query(remove_brackets(image_query)),
-            channel=message.channel
+            image_url=item.image_url,
+            channel=channel
         )
+
+
+async def save_outfit_command(message):
+    if message.channel.id not in last_sent_outfit_sets_map:
+        await message.channel.send("No outfits were sent")
+        return
+
+    saved_outfits.save_outfit(
+        message.channel.id, last_sent_outfit_sets_map[message.channel.id])
+    saved_outfits.save()
+    await message.channel.send("Saved outfit")
+
+
+async def saved_outfits_command(message):
+    outfits = saved_outfits.get_saved_outfit(message.channel.id)
+    if len(outfits) <= 0:
+        await message.channel.send("There are no saved outfits in this channel")
+        return
+
+    response = "View ...:"
+    for i in range(len(outfits)):
+        response += f"\n`saved outfit {i + 1}`"
+    await message.channel.send(response)
 
 
 @client.event
@@ -169,6 +210,10 @@ async def on_message(message):
 
     if text_clean.startswith('what should i wear'):
         await what_should_i_wear_command(message)
+    elif text_clean.startswith('save outfit'):
+        await save_outfit_command(message)
+    elif text_clean.startswith('saved outfit'):
+        await saved_outfits_command(message)
 
 
 client.run(BOT_API_KEY)
