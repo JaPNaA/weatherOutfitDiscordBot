@@ -6,7 +6,7 @@ class Outfit:
     # hats = beanie, knitted had
     outfits = [
         [
-            ["knit cap (beanie)", "ushanka (trapper)", "winter headband", "fedora"],
+            ["knit cap (beanie)", "ushanka (trapper)", "winter headband", "fedora", "santa hat"],
             ["knit cap (beanie)", "hood", "fedora"],
             ["knit cap (beanie)", "hood", "fedora", None],
             ["cap", None],
