@@ -83,8 +83,8 @@ async def send_message_with_image(text, image_url, channel, **extention):
         discord_file = discord.File(file)
         await channel.send(text, file=discord_file)
 
-def get_outfit_based_on_weather():
-    data = get_weather()['main']
+def get_outfit_based_on_weather(weather_data):
+    data = weather_data['main']
     rain = 'rain' in data
     set = 0
     if -12 < data['temp'] <= 0:
@@ -110,12 +110,18 @@ async def on_message(message):
     text_clean = message.content.lower()
 
     if text_clean.startswith('what should i wear'):
-        outfit = get_outfit_based_on_weather()
-        await send_message_with_image(
-            text=outfit[0], 
-            image_url=get_wikimedia_image(outfit[0]),
-            channel=message.channel
+        weather_data = get_weather()
+        outfit = get_outfit_based_on_weather(weather_data)
+        await message.channel.send(
+            f"It's {weather_data['main']['temp'] -273.15} degrees outside and " +
+            ("" if 'rain' in weather_data else "not ") + "raining, so you should wear:"
         )
+        for item in outfit:
+            await send_message_with_image(
+                text=item,
+                image_url=get_image_url_query(item),
+                channel=message.channel
+            )
 
 
 client.run(bot_key)
