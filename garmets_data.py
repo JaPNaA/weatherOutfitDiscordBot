@@ -80,6 +80,25 @@ class Outfit:
         ]
     ]
 
+    garmet_type_info = [{
+        'type': "hat",
+        'goes_on': "head"
+    }, {
+        'type': "shirt",
+        'goes_on': "torso"
+    }, {
+        'type': "pants",
+        'goes_on': "legs"
+    }, {
+        'type': "shoes",
+        'goes_on': "feet"
+    }, {
+        'type': "gloves",
+        'goes_on': "hands"
+    }]
+
+    set_type_names = ["freezing", "cold", "cool", "warm", "hot"]
+
     def pick_outfit(self, set: int, rain: bool) -> List[str]:
         """ Returns a list of outfits you can wear given if it's raining or not"""
         retval = []

@@ -73,18 +73,22 @@ async def send_message_with_image(text, image_url, channel):
         await channel.send(text, file=discord_file)
 
 
+def get_set_for_temperature(temp: float) -> int:
+    if -12 < temp <= 0:
+        return 1
+    if 0 < temp <= 12:
+        return 2
+    if 12 < temp <= 24:
+        return 3
+    if temp > 24:
+        return 4
+    return 0
+
+
 def get_outfit_based_on_weather(weather_data):
     data = weather_data['main']
     rain = 'rain' in data
-    set = 0
-    if -12 < data['temp'] <= 0:
-        set = 1
-    if 0 < data['temp'] <= 12:
-        set = 2
-    if 12 < data['temp'] <= 24:
-        set = 3
-    if data['temp'] > 24:
-        set = 4
+    set = get_set_for_temperature(data['temp'])
     return outfits.pick_outfit(set, rain)
 
 
@@ -103,14 +107,21 @@ async def on_message(message):
     if text_clean.startswith('what should i wear'):
         weather_data = get_weather()
         outfit = get_outfit_based_on_weather(weather_data)
+        weather_deg_c = round((weather_data['main']['temp'] - 273.15) * 10) / 10
+        temp_description = outfits.set_type_names[get_set_for_temperature(weather_deg_c)]
+
         await message.channel.send(
-            f"It's {weather_data['main']['temp'] -273.15} degrees outside and " +
+            f"It's {weather_deg_c}°C outside, which is {temp_description}! It's " +
             ("" if 'rain' in weather_data else "not ") +
             "raining, so you should wear:"
         )
-        for item in outfit:
+
+        for i in range(len(outfits.garmet_type_info)):
+            item = outfit[i]
+            item_info = outfits.garmet_type_info[i]
+
             await send_message_with_image(
-                text=item,
+                text=f"{item} on your {item_info['goes_on']}",
                 image_url=get_image_url_query(item),
                 channel=message.channel
             )
