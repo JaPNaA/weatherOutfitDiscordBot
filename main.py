@@ -1,5 +1,11 @@
 import discord
 
+try:
+    with open(".bot_token") as file:
+        key = file.read().strip()
+except:
+    key = ""
+
 client = discord.Client()
 
 
@@ -16,4 +22,9 @@ async def on_message(message):
     if message.content.startswith('$hello'):
         await message.channel.send('Hello!')
 
-client.run('your token here')
+if not key:
+    key = input("Enter key: ")
+    with open(".bot_token", 'w') as file:
+        file.write(key)
+
+client.run(key)
