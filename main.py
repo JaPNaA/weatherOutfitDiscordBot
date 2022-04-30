@@ -41,7 +41,8 @@ def get_image_url_query(query):
         )
 
         pages = response_data['query']['pages']
-        images = list(pages.items())[0][1]['images']
+        # filter svgs: probably not what we're looking for
+        images = [x for x in list(pages.items())[0][1]['images'] if not x.endswith(".svg")]
         rand_image = random.choice(images)
 
         image_data = get_JSON(
@@ -107,8 +108,10 @@ async def on_message(message):
     if text_clean.startswith('what should i wear'):
         weather_data = get_weather()
         outfit = get_outfit_based_on_weather(weather_data)
-        weather_deg_c = round((weather_data['main']['temp'] - 273.15) * 10) / 10
-        temp_description = outfits.set_type_names[get_set_for_temperature(weather_deg_c)]
+        weather_deg_c = round(
+            (weather_data['main']['temp'] - 273.15) * 10) / 10
+        temp_description = outfits.set_type_names[get_set_for_temperature(
+            weather_deg_c)]
 
         await message.channel.send(
             f"It's {weather_deg_c}°C outside, which is {temp_description}! It's " +
@@ -119,10 +122,16 @@ async def on_message(message):
         for i in range(len(outfits.garmet_type_info)):
             item = outfit[i]
             item_info = outfits.garmet_type_info[i]
+            image_query = item
+            response = f"{item} on your {item_info['goes_on']}"
+
+            if item is None:
+                response = f"nothing on your {item_info['goes_on']}"
+                image_query = item_info['goes_on']
 
             await send_message_with_image(
-                text=f"{item} on your {item_info['goes_on']}",
-                image_url=get_image_url_query(item),
+                text=response,
+                image_url=get_image_url_query(image_query),
                 channel=message.channel
             )
 
