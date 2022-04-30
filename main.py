@@ -45,27 +45,34 @@ def get_weather():
     return get_JSON("https://api.openweathermap.org/data/2.5/weather?lat=43.548899&lon=-79.6650758&appid=" + weather_key)
 
 
-def get_wikimedia_image(query):
-    response_data = get_JSON(
-        "https://en.wikipedia.org/w/api.php?action=query&format=json&prop=images&titles=" +
-        query
-    )
+def get_image_url_query(query):
+    try:
+        response_data = get_JSON(
+            "https://en.wikipedia.org/w/api.php?action=query&format=json&prop=images&titles=" +
+            query
+        )
 
-    pages = response_data['query']['pages']
-    images = list(pages.items())[0][1]['images']
-    rand_image = random.choice(images)
+        pages = response_data['query']['pages']
+        images = list(pages.items())[0][1]['images']
+        rand_image = random.choice(images)
 
-    image_data = get_JSON(f"https://en.wikipedia.org/w/api.php?action=query&format=json&prop=imageinfo&titles={urllib.parse.quote(rand_image['title'])}&iiprop=url&iiurlwidth=300")
-    image_pages = image_data['query']['pages']
-    url = list(image_pages.items())[0][1]['imageinfo'][0]['thumburl']
+        image_data = get_JSON(f"https://en.wikipedia.org/w/api.php?action=query&format=json&prop=imageinfo&titles={urllib.parse.quote(rand_image['title'])}&iiprop=url&iiurlwidth=300")
+        image_pages = image_data['query']['pages']
+        url = list(image_pages.items())[0][1]['imageinfo'][0]['thumburl']
 
-    return url
+        return url
+    except:
+        # fallback: unsplash
+        return "https://source.unsplash.com/random/280x280/?" + urllib.parse.quote(query)
 
 
-async def send_message_with_image(text, image_url, channel):
+async def send_message_with_image(text, image_url, channel, **extention):
     global cache_file_index
 
     cache_file_path = f"./cache/{urllib.parse.quote(image_url, safe='')}"
+    # check if extention doesn't exists
+    if cache_file_path.rfind(".") < len(cache_file_path) - 4:
+        cache_file_path += ".jpg"
 
     if not os.path.exists(cache_file_path):
         image_req = urllib.request.urlopen(image_url)
