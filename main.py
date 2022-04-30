@@ -111,9 +111,9 @@ def get_set_for_temperature(temp: float) -> int:
 
 
 def get_outfit_based_on_weather(weather_data):
-    data = weather_data['main']
-    rain_or_snow = ('rain' in data) or ('snow' in data)
-    set = get_set_for_temperature(kelvin_to_celcius(data['temp']))
+    rain_or_snow = ('rain' in weather_data) or ('snow' in weather_data)
+    main_data = weather_data['main']
+    set = get_set_for_temperature(kelvin_to_celcius(main_data['temp']))
     return outfits.pick_outfit(set, rain_or_snow)
 
 
