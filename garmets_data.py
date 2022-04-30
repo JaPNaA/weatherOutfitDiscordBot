@@ -8,9 +8,9 @@ class Outfit:
         [
             ["beanie", "trapper", "winter headband"],
             ["beanie", "hood"],
-            ["beanie", "hood", "nothing"],
-            ["cap", "nothing"],
-            ["cap", "nothing"]
+            ["beanie", "hood", None],
+            ["cap", None],
+            ["cap", None]
         ],
         [
             ["layers of jacket"],
@@ -36,9 +36,9 @@ class Outfit:
         [
             ["winter gloves"],
             ["gloves", "mittens"],
-            ["gloves", "mittens", "none"],
-            ["bike gloves", "none"],
-            ["none"]
+            ["gloves", "mittens", None],
+            ["bike gloves", None],
+            [None]
         ]
     ]
 
@@ -74,9 +74,9 @@ class Outfit:
         [
             ["winter gloves"],
             ["gloves", "mittens"],
-            ["gloves", "mittens", "none"],
-            ["bike gloves", "none"],
-            ["none"]
+            ["gloves", "mittens", None],
+            ["bike gloves", None],
+            [None]
         ]
     ]
 
