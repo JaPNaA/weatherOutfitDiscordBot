@@ -77,7 +77,8 @@ def get_image_url_query(query):
 async def send_message_with_image(text, image_url, channel):
     global cache_file_index
 
-    cache_file_path = f"./cache/{urllib.parse.quote(image_url, safe='')}"
+    cache_file_name = (urllib.parse.quote(image_url, safe=''))[-100:]
+    cache_file_path = f"./cache/{cache_file_name}"
     # check if extention doesn't exists
     if cache_file_path.rfind(".") < len(cache_file_path) - 4:
         cache_file_path += ".jpg"
