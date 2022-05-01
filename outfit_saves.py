@@ -43,6 +43,12 @@ class SavedOutfits:
 
     def save_outfit(self, channel_id: int, outfit: OutfitSet):
         self.outfits_per_channel.setdefault(channel_id, []).append(outfit)
+    
+    def forget_outfit(self, channel_id: int, outfit_index: int):
+        if channel_id not in self.outfits_per_channel:
+            return
+        outfits = self.outfits_per_channel[channel_id]
+        outfits.remove(outfits[outfit_index])
 
     def get_saved_outfit(self, channel_id: int):
         if channel_id not in self.outfits_per_channel:

@@ -196,6 +196,7 @@ async def saved_outfits_command(message):
         response = "Which saved outfit do you want to see? ..."
         for i in range(len(outfits)):
             response += f"\n`saved outfit {i + 1}`"
+        response += "\nYou can forget outfits by asking to `forget outfit #`"
         await message.channel.send(response)
         return
 
@@ -206,6 +207,26 @@ async def saved_outfits_command(message):
 
     await message.channel.send(f"Saved outfit {specific_index + 1}:")
     await _send_outfit_set(outfits[specific_index], message.channel)
+
+
+async def forget_outfit_command(message):
+    outfits = saved_outfits.get_saved_outfit(message.channel.id)
+    if len(outfits) <= 0:
+        await message.channel.send("There are no saved outfits in this channel")
+        return
+
+    specific_index_matches = re.findall(NUMBER_REGEX, message.content)
+    if not specific_index_matches:
+        await message.channel.send("Please specify which outfit to forget")
+
+    specific_index = int(specific_index_matches[0]) - 1
+    if not (0 <= specific_index < len(outfits)):
+        await message.channel.send("Invalid index")
+        return
+
+    saved_outfits.forget_outfit(message.channel.id, specific_index)
+    saved_outfits.save()
+    await message.channel.send(f"Forgot outfit {specific_index + 1}")
 
 
 @client.event
@@ -226,6 +247,8 @@ async def on_message(message):
         await save_outfit_command(message)
     elif text_clean.startswith('saved outfit'):
         await saved_outfits_command(message)
+    elif text_clean.startswith('forget outfit'):
+        await forget_outfit_command(message)
 
 
 client.run(BOT_API_KEY)
