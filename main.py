@@ -154,6 +154,7 @@ async def what_should_i_wear_command(message):
         outfit_set.add_item(OutfitItem(i, item, image_url))
 
     await _send_outfit_set(outfit_set, message.channel)
+    await message.channel.send("You can save this outfit by telling me to `save outfit`!")
     last_sent_outfit_sets_map[message.channel.id] = outfit_set
 
 
@@ -175,13 +176,13 @@ async def _send_outfit_set(outfit_set: OutfitSet, channel):
 
 async def save_outfit_command(message):
     if message.channel.id not in last_sent_outfit_sets_map:
-        await message.channel.send("No outfits were sent")
+        await message.channel.send("You must request an outfit first.")
         return
 
     saved_outfits.save_outfit(
         message.channel.id, last_sent_outfit_sets_map[message.channel.id])
     saved_outfits.save()
-    await message.channel.send("Saved outfit")
+    await message.channel.send("Saved outfit. You can see your `saved outfits` by asking.")
 
 
 async def saved_outfits_command(message):
@@ -190,10 +191,21 @@ async def saved_outfits_command(message):
         await message.channel.send("There are no saved outfits in this channel")
         return
 
-    response = "View ...:"
-    for i in range(len(outfits)):
-        response += f"\n`saved outfit {i + 1}`"
-    await message.channel.send(response)
+    specific_index_matches = re.findall(NUMBER_REGEX, message.content)
+    if not specific_index_matches:
+        response = "Which saved outfit do you want to see? ..."
+        for i in range(len(outfits)):
+            response += f"\n`saved outfit {i + 1}`"
+        await message.channel.send(response)
+        return
+
+    specific_index = int(specific_index_matches[0]) - 1
+    if not (0 <= specific_index < len(outfits)):
+        await message.channel.send("Invalid index")
+        return
+
+    await message.channel.send(f"Saved outfit {specific_index + 1}:")
+    await _send_outfit_set(outfits[specific_index], message.channel)
 
 
 @client.event
