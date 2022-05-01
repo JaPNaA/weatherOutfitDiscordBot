@@ -14,11 +14,11 @@ class OutfitItem:
         self.image_url = image_url
 
     def _to_obj(self):
-        return json.dumps({
+        return {
             'garmet_type': self.garmet_type,
             'garmet_name': self.garmet_name,
             'image_url': self.image_url
-        })
+        }
 
 
 class OutfitSet:
@@ -39,13 +39,7 @@ class SavedOutfits:
 
     def __init__(self):
         self.outfits_per_channel = {}
-
-        if os.path.exists("cache/.saved_outfits"):
-            with open("cache/.saved_outfits") as file:
-                try:
-                    self.outfits_per_channel = json.load(file)
-                except json.JSONDecodeError:
-                    pass
+        self._load_saved_outfits()
 
     def save_outfit(self, channel_id: int, outfit: OutfitSet):
         self.outfits_per_channel.setdefault(channel_id, []).append(outfit)
@@ -60,5 +54,32 @@ class SavedOutfits:
             file.write(json.dumps(self._to_obj()))
 
     def _to_obj(self):
-        print(self.outfits_per_channel)
         return {key: [x._to_obj() for x in value] for key, value in self.outfits_per_channel.items()}
+
+    def _load_saved_outfits(self):
+        if not os.path.exists("cache/.saved_outfits"):
+            return
+
+        with open("cache/.saved_outfits") as file:
+            try:
+                saved_data = json.load(file)
+            except json.JSONDecodeError:
+                return
+
+        for channel_id, saved_outfits in saved_data.items():
+            parsed_saved_outfits = []
+
+            for outfit_set in saved_outfits:
+                parsed_outfit_set = OutfitSet()
+
+                for item in outfit_set:
+                    parsed_outfit_item = OutfitItem(
+                        garmet_type=item['garmet_type'],
+                        garmet_name=item['garmet_name'],
+                        image_url=item['image_url']
+                    )
+                    parsed_outfit_set.add_item(parsed_outfit_item)
+
+                parsed_saved_outfits.append(parsed_outfit_set)
+
+            self.outfits_per_channel[int(channel_id)] = parsed_saved_outfits
